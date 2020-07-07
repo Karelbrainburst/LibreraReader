@@ -10,6 +10,9 @@ import org.ebookdroid.common.settings.types.DocumentViewMode;
 import org.ebookdroid.common.settings.types.PageAlign;
 import org.ebookdroid.ui.viewer.IActivityController;
 
+/**
+ * 横向滚动控制器
+ */
 public class HScrollController extends AbstractScrollController {
 
     public HScrollController(final IActivityController base) {

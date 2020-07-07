@@ -64,7 +64,7 @@ class ConversionInstance implements Instance {
     */
    public ConversionInstance(Context context, Value value, Class convert) throws Exception {
       this.context = context;
-      this.convert = convert;      
+      this.convert = convert; //用于将文档转换成其他格式
       this.value = value;
    }
    

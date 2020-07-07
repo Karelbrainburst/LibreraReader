@@ -1,6 +1,7 @@
 package org.ebookdroid.ui.viewer.viewers;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import com.foobnix.android.utils.LOG;
@@ -14,6 +15,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 画出阅读界面的线程
+ */
 public class DrawThread extends Thread {
 
     private final SurfaceHolder surfaceHolder;
@@ -45,15 +49,21 @@ public class DrawThread extends Thread {
         }
     }
 
+    /**
+     * 绘制方法
+     * 该方法随着阅读界面滚动会多次绘制调用
+     */
     protected void draw() {
         final ViewState viewState = takeTask(1000, TimeUnit.MILLISECONDS, false);
         if (viewState == null) {
             return;
         }
         Canvas canvas = null;
+        Log.v("DrawThread","111");
         try {
-            canvas = surfaceHolder.lockCanvas(null);
+            canvas = surfaceHolder.lockCanvas(null);//lockCanvas:矩形外部的像素将由下一次对lockCanvas（）的调用保留,既每次调用都会在之前的基础上叠加
             EventPool.newEventDraw(viewState, canvas, null).process();
+            Log.v("DrawThread","222");
         } catch (final Throwable th) {
             LOG.e(th);
         } finally {

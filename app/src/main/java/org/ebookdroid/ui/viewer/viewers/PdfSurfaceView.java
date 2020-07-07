@@ -3,6 +3,7 @@ package org.ebookdroid.ui.viewer.viewers;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -25,6 +26,9 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 真正的阅读界面，是epub等小说的承载view
+ */
 public final class PdfSurfaceView extends android.view.SurfaceView implements IView, SurfaceHolder.Callback {
 
     protected final IActivityController base;
@@ -33,7 +37,7 @@ public final class PdfSurfaceView extends android.view.SurfaceView implements IV
 
     protected PageAlign align;
 
-    protected DrawThread drawThread;
+    protected DrawThread drawThread;//画出小说阅读界面的线程
 
     protected boolean layoutLocked;
 
@@ -265,7 +269,7 @@ public final class PdfSurfaceView extends android.view.SurfaceView implements IV
 
     /**
      * {@inheritDoc}
-     * 
+     * 开始画出界面
      * @see android.view.View#onLayout(boolean, int, int, int, int)
      */
     @Override
@@ -273,16 +277,17 @@ public final class PdfSurfaceView extends android.view.SurfaceView implements IV
         super.onLayout(layoutChanged, left, top, right, bottom);
 
         final Rect oldLayout = layout.getAndSet(new Rect(left, top, right, bottom));
-        base.getDocumentController().onLayoutChanged(layoutChanged, layoutLocked, oldLayout, layout.get());
-
-        if (oldLayout == null) {
-            layoutFlag.set();
+//        base.getDocumentController().onLayoutChanged(layoutChanged, layoutLocked, oldLayout, layout.get());
+        Log.v("PdfSurfaceView","444 onLayout");
+        if (oldLayout == null) {//如果旧的阅读界面为空，基本都会为空，程序经常进入此处
+            Log.v("PdfSurfaceView","666");
+            layoutFlag.set();//设置标记
         }
     }
 
     /**
      * {@inheritDoc}
-     * 
+     * 等待初始化
      * @see org.ebookdroid.ui.viewer.IView#waitForInitialization()
      */
     @Override
@@ -294,7 +299,7 @@ public final class PdfSurfaceView extends android.view.SurfaceView implements IV
 
     /**
      * {@inheritDoc}
-     * 
+     * 退出/销毁
      * @see org.ebookdroid.ui.viewer.IView#onDestroy()
      */
     @Override
@@ -332,34 +337,48 @@ public final class PdfSurfaceView extends android.view.SurfaceView implements IV
 
     /**
      * {@inheritDoc}
-     * 
+     * 重画界面
      * @see org.ebookdroid.ui.viewer.IView#redrawView()
      */
     @Override
     public final void redrawView() {
         EventBus.getDefault().post(new MessagePageXY(MessagePageXY.TYPE_HIDE));
         redrawView(new ViewState(base.getDocumentController()));
+        Log.v("PdfSurfaceView","111");
     }
 
+    /**
+     * 重画视图
+     * 每次滑动小说阅读界面都会触发这里
+     * @param viewState
+     */
     @Override
     public final void redrawView(final ViewState viewState) {
         if (viewState != null) {
             if (drawThread != null) {
                 drawThread.draw(viewState);
+                Log.v("PdfSurfaceView","222");
             }
             final DecodeService ds = base.getDecodeService();
             if (ds != null) {
                 ds.updateViewState(viewState);
+                Log.v("PdfSurfaceView","333");
             }
         }
 
     }
 
+    /**
+     * PdfSurfaceView会通过这个方法画出小说界面
+     * 这里只会出发一次
+     * @param holder
+     */
     @Override
     public final void surfaceCreated(final SurfaceHolder holder) {
-        drawThread = new DrawThread(getHolder());
+        drawThread = new DrawThread(getHolder());//真正画出阅读界面的线程
         drawThread.setPriority(CoreSettings.getInstance().drawThreadPriority);
         drawThread.start();
+        Log.v("PdfSurfaceView","555");
     }
 
     @Override

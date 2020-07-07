@@ -46,17 +46,25 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * 书本加载服务类
+ * 这是一个加载书本的服务类
+ * IntentService 默认为我们开启了一个工作线程，在任务执行完毕后，自动停止服务
+ * 使用Service 可以同时执行多个请求，而使用IntentService 只能同时执行一个请求。
+ */
 public class BooksService extends IntentService {
     public static String TAG = "BooksService";
     public static String INTENT_NAME = "BooksServiceIntent";
-    public static String ACTION_SEARCH_ALL = "ACTION_SEARCH_ALL";
-    public static String ACTION_REMOVE_DELETED = "ACTION_REMOVE_DELETED";
+    public static String ACTION_SEARCH_ALL = "ACTION_SEARCH_ALL";//查找数据库全部数据的指令
+    public static String ACTION_REMOVE_DELETED = "ACTION_REMOVE_DELETED";//移除数据
     public static String ACTION_SYNC_DROPBOX = "ACTION_SYNC_DROPBOX";
     public static String ACTION_RUN_SYNCRONICATION = "ACTION_RUN_SYNCRONICATION";
-    public static String RESULT_SYNC_FINISH = "RESULT_SYNC_FINISH";
+    public static String RESULT_SYNC_FINISH = "RESULT_SYNC_FINISH";//扫描完毕
     public static String RESULT_SEARCH_FINISH = "RESULT_SEARCH_FINISH";
-    public static String RESULT_BUILD_LIBRARY = "RESULT_BUILD_LIBRARY";
-    public static String RESULT_SEARCH_COUNT = "RESULT_SEARCH_COUNT";
+    public static String RESULT_BUILD_LIBRARY = "RESULT_BUILD_LIBRARY";//创建书库
+    public static String RESULT_SEARCH_COUNT = "RESULT_SEARCH_COUNT";//搜索到的条目数
+    //用volatile修饰的变量是对所有线程共享的、可见的，每次JVM都会读取最新写入的值并使其最新值在
+    // 所有CPU可见。目的就是解决多线程中，同一时间多个线程对内存中的同一个变量操作的问题。
     public static volatile boolean isRunning = false;
     Handler handler;
     boolean isStartForeground = false;
@@ -135,11 +143,13 @@ public class BooksService extends IntentService {
         }
     }
 
+
+    //重写IntentService 的onHandleIntent()方法
     @Override
     protected void onHandleIntent(Intent intent) {
         //startMyForeground();
 
-
+        // 这里已经是工作线程，在这里执行操作
         if (intent == null) {
             return;
         }
@@ -147,7 +157,7 @@ public class BooksService extends IntentService {
         try {
             sendProggressMessage();
 
-            if (isRunning) {
+            if (isRunning) {//服务处于启动中则返回
                 LOG.d(TAG, "BooksService", "Is-running");
                 return;
             }
@@ -158,7 +168,7 @@ public class BooksService extends IntentService {
             //TESET
 
 
-
+            //当按按下刷新按键后，发送了的Action 为同步请求
             if (ACTION_RUN_SYNCRONICATION.equals(intent.getAction())) {
                 if (AppSP.get().isEnableSync) {
 
@@ -194,7 +204,8 @@ public class BooksService extends IntentService {
 
             }
 
-
+            //正常打开APP,不是第一次进入的，会走这里
+            //删除Action
             if (ACTION_REMOVE_DELETED.equals(intent.getAction())) {
                 List<FileMeta> all = AppDB.get().getAll();
 
@@ -203,14 +214,15 @@ public class BooksService extends IntentService {
                         continue;
                     }
 
-                    if (Clouds.isCloud(meta.getPath())) {
+                    if (Clouds.isCloud(meta.getPath())) {//检查是不是云端的书籍
                         continue;
                     }
 
                     File bookFile = new File(meta.getPath());
-                    if (ExtUtils.isMounted(bookFile)) {
-                        if (!bookFile.exists()) {
-                            AppDB.get().delete(meta);
+                    //存储状态（如果介质存在并安装在其挂载点，具有*读/写访问权限）。
+                    if (ExtUtils.isMounted(bookFile)) {//检查在该路径（挂载点）上，是否有该书籍并且拥有读写权限
+                        if (!bookFile.exists()) {//如果没有，（某些书籍在后来删除了）
+                            AppDB.get().delete(meta);//则把这些书籍信息从数据库中删除
                             LOG.d("BooksService Delete-setIsSearchBook", meta.getPath());
                         }
                     }
@@ -250,53 +262,62 @@ public class BooksService extends IntentService {
 
                 Clouds.get().syncronizeGet();
 
-            } else if (ACTION_SEARCH_ALL.equals(intent.getAction())) {
+            }
+
+            /* ********** 以上是 不是第一次打开app 的加载数据流程 ********** */
+
+            /* ********** 第一次加载数据进入这里： 查找全部Action********** */
+
+            else if (ACTION_SEARCH_ALL.equals(intent.getAction())) {
                 LOG.d(ACTION_SEARCH_ALL);
                 //TempHolder.listHash++;
                 //AppDB.get().getDao().detachAll();
 
                 AppProfile.init(this);
 
-                ImageExtractor.clearErrors();
-                IMG.clearDiscCache();
+                ImageExtractor.clearErrors();//清除错误
+                IMG.clearDiscCache();//清除光盘缓存
 
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        IMG.clearMemoryCache();
+                        IMG.clearMemoryCache();//清除内存缓存
                     }
                 });
 
 
 
 
-                AppDB.get().deleteAllData();
+                AppDB.get().deleteAllData();//删除数据库所有数据
                 itemsMeta.clear();
 
-                handler.post(timer);
+                handler.post(timer);//发送更新进度消息
 
-
+                //path :是每一个文件夹路径
                 for (final String path : JsonDB.get(BookCSS.get().searchPathsJson)) {
                     if (path != null && path.trim().length() > 0) {
                         final File root = new File(path);
-                        if (root.isDirectory()) {
+                        if (root.isDirectory()) {//如果这个文件是一个路径
                             LOG.d("Search in: " + root.getPath());
-                            SearchCore.search(itemsMeta, root, ExtUtils.seachExts);
+                            SearchCore.search(itemsMeta, root, ExtUtils.seachExts);//继续递归调用。seachExts是需要查找的后缀文件类型的集合
                         }
                     }
                 }
 
+                //上面的递归查找文件夹结束后，所有 书元类 （FileMeta） 只有 path属性有数据
+
 
                 for (FileMeta meta : itemsMeta) {
-                    meta.setIsSearchBook(true);
+                    meta.setIsSearchBook(true);//标记为该次扫描查找中的目标书籍
                 }
 
+                //其他不在该次扫描中查找的书籍，统一集中计算起来
                 final List<SimpleMeta> allExcluded = AppData.get().getAllExcluded();
 
                 if (TxtUtils.isListNotEmpty(allExcluded)) {
                     for (FileMeta meta : itemsMeta) {
                         if (allExcluded.contains(SimpleMeta.SyncSimpleMeta(meta.getPath()))) {
-                            meta.setIsSearchBook(false);
+                            meta.setIsSearchBook(false);//标记为非目标书籍
                         }
                     }
                 }
@@ -318,15 +339,17 @@ public class BooksService extends IntentService {
                 itemsMeta.addAll(AppData.get().getAllFavoriteFiles(false));
                 itemsMeta.addAll(AppData.get().getAllFavoriteFolders());
 
+                //这条作用是把上面插入的数据生成主键
+                AppDB.get().saveAll(itemsMeta);//全部保存到数据库
 
-                AppDB.get().saveAll(itemsMeta);
+                handler.removeCallbacks(timer);//停止更新进度信息
+                //加载完所有书本的地址后通知 listview更新书本数据
+                sendFinishMessage();//debug模式下，第一次进入app加载数据，进过这个方法的时候list上已经出现完整的list数据
 
-                handler.removeCallbacks(timer);
+                handler.post(timer2);//通知创建书库
 
-                sendFinishMessage();
-
-                handler.post(timer2);
-
+                //程序来到这里每一个FileMeta 里面只有 path有数据
+                //一下这段是填上书本的其他信息
                 for (FileMeta meta : itemsMeta) {
                     File file = new File(meta.getPath());
                     FileMetaCore.get().upadteBasicMeta(meta, file);
@@ -339,18 +362,18 @@ public class BooksService extends IntentService {
                 for (FileMeta meta : itemsMeta) {
                     if(FileMetaCore.isSafeToExtactBook(meta.getPath())) {
                         EbookMeta ebookMeta = FileMetaCore.get().getEbookMeta(meta.getPath(), CacheDir.ZipService, true);
-                        FileMetaCore.get().udpateFullMeta(meta, ebookMeta);
+                        FileMetaCore.get().udpateFullMeta(meta, ebookMeta);//填上所有书元信息
                     }
                 }
 
                 SharedBooks.updateProgress(itemsMeta, true,-1);
-                AppDB.get().updateAll(itemsMeta);
+                AppDB.get().updateAll(itemsMeta);//更新全部
 
 
                 itemsMeta.clear();
 
                 handler.removeCallbacks(timer2);
-                sendFinishMessage();
+                sendFinishMessage();//完成扫描
                 CacheDir.ZipService.removeCacheContent();
 
                 Clouds.get().syncronizeGet();
@@ -367,7 +390,11 @@ public class BooksService extends IntentService {
                 updateBookAnnotations();
 
 
-            } else if (ACTION_SYNC_DROPBOX.equals(intent.getAction())) {
+            }
+
+            //以上时第一次加载书本数据
+
+            else if (ACTION_SYNC_DROPBOX.equals(intent.getAction())) {
                 Clouds.get().syncronizeGet();
 
             }
@@ -400,9 +427,10 @@ public class BooksService extends IntentService {
 
     }
 
+    //完成发送
     private void sendFinishMessage() {
         try {
-            //AppDB.get().getDao().detachAll();
+            //AppDB.get().getDao().detachAll();//关闭数据库
         } catch (Exception e) {
             LOG.e(e);
         }
@@ -411,6 +439,7 @@ public class BooksService extends IntentService {
         EventBus.getDefault().post(new MessageSyncFinish());
     }
 
+    //更新进度，主要用来显示扫描进度到多少了
     private void sendProggressMessage() {
         Intent itent = new Intent(INTENT_NAME).putExtra(Intent.EXTRA_TEXT, RESULT_SEARCH_COUNT).putExtra("android.intent.extra.INDEX", itemsMeta.size());
         LocalBroadcastManager.getInstance(this).sendBroadcast(itent);

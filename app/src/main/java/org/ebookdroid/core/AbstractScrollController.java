@@ -1,7 +1,9 @@
 package org.ebookdroid.core;
 
+import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 
 import com.foobnix.android.utils.LOG;
 import com.foobnix.model.AppBook;
@@ -10,6 +12,9 @@ import org.ebookdroid.common.settings.SettingsManager;
 import org.ebookdroid.common.settings.types.DocumentViewMode;
 import org.ebookdroid.ui.viewer.IActivityController;
 
+/**
+ * 抽象滚动控制器
+ */
 public abstract class AbstractScrollController extends AbstractViewController {
 
 
@@ -49,6 +54,7 @@ public abstract class AbstractScrollController extends AbstractViewController {
     }
 
     /**
+     * 绘制小说阅读界面
      * {@inheritDoc}
      * 
      * @see org.ebookdroid.ui.viewer.IViewController#drawView(org.ebookdroid.core.EventDraw)
@@ -57,16 +63,19 @@ public abstract class AbstractScrollController extends AbstractViewController {
     public final void drawView(final EventDraw eventDraw) {
         final ViewState viewState = eventDraw.viewState;
         if (viewState.model == null) {
+            Log.v("AbstractScrollControlle","drawView 111");
             return;
         }
 
         for (final Page page : viewState.pages.getVisiblePages()) {
             if (page != null) {
-                eventDraw.process(page);
+                eventDraw.process(page);//在这里又回到eventDraw中的处理线程去绘制
+                Log.v("AbstractScrollControlle","drawView 222");
             }
         }
 
         getView().continueScroll();
+        Log.v("AbstractScrollControlle","drawView 333");
     }
 
     /**

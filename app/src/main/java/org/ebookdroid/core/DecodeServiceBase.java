@@ -5,6 +5,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.util.Pair;
 
 import com.foobnix.android.utils.LOG;
@@ -50,6 +51,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * 解码服务库，一个实现类
+ */
 public class DecodeServiceBase implements DecodeService {
 
     static final AtomicLong TASK_ID_SEQ = new AtomicLong();
@@ -139,12 +143,18 @@ public class DecodeServiceBase implements DecodeService {
         return this.codecContext.getBitmapConfig();
     }
 
+    /**
+     * 打开一本小说
+     * @param fileName 小说/文件名
+     * @param password
+     */
     @Override
     public void open(final String fileName, final String password) {
         ImageExtractor.clearCodeDocument();
-        codecDocument = codecContext.openDocument(fileName, password);
-        ImageExtractor.init(codecDocument, fileName);
-
+        codecDocument = codecContext.openDocument(fileName, password);//小说绘制入口1
+        Log.v("DecodeServiceBase","open "+fileName);
+        ImageExtractor.init(codecDocument, fileName);//图片解码器
+        Log.v("DecodeServiceBase","open");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.ebookdroid.core.models;
 
+import android.util.Log;
+
 import com.foobnix.android.utils.LOG;
 import com.foobnix.dao2.FileMeta;
 import com.foobnix.model.AppBook;
@@ -34,6 +36,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 文件模型
+ */
 public class DocumentModel extends ListenerProxy {
 
     public final DecodeService decodeService;
@@ -51,18 +56,25 @@ public class DocumentModel extends ListenerProxy {
         LOG.d("Document activityType Type", activityType);
         if (activityType != null) {
             try {
+                Log.v("DocumentModel","DocumentModel 111");
                 context = BookType.getCodecContextByType(activityType);
                 LOG.d("Document context Type", context);
-                decodeService = new DecodeServiceBase(context, view);
+                decodeService = new DecodeServiceBase(context, view);//创建一个解码库
             } catch (final Throwable th) {
                 throw new RuntimeException(th);
             }
         } else {
             context = null;
             decodeService = new DecodeServiceStub();
+            Log.v("DocumentModel","DocumentModel 222");
         }
     }
 
+    /**
+     * 打开小说
+     * @param fileName
+     * @param password
+     */
     public void open(String fileName, String password) {
         if (!ExtUtils.isValidFile(fileName)) {
             throw new IllegalArgumentException("Invalid file:" + fileName);

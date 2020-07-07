@@ -14,6 +14,9 @@ import org.ebookdroid.core.models.DocumentModel;
 import org.ebookdroid.ui.viewer.IView;
 import org.ebookdroid.ui.viewer.IViewController;
 
+/**
+ * 阅读界面的状态信息
+ */
 public class ViewState {
 
     public final CoreSettings app;
@@ -21,13 +24,13 @@ public class ViewState {
     public final IViewController ctrl;
     public final DocumentModel model;
 
-    public final RectF viewRect;
+    public final RectF viewRect;//视图矩阵
     public final PointF viewBase;
 
     public final boolean nightMode;
-    public final float zoom;
-    public final PageAlign pageAlign;
-    public final PagePaint paint;
+    public final float zoom;//区域
+    public final PageAlign pageAlign;//页面对齐
+    public final PagePaint paint;//页面画图
 
     public final Pages pages;
 

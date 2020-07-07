@@ -34,6 +34,9 @@ import org.jsoup.safety.Whitelist;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * 文件元加载核心类
+ */
 public class FileMetaCore {
 
     public static int STATE_NONE = 0;
@@ -181,6 +184,13 @@ public class FileMetaCore {
         return true;
     }
 
+    /**
+     * 加载书元
+     * @param path
+     * @param folder
+     * @param extract
+     * @return
+     */
     public EbookMeta getEbookMeta(String path, CacheDir folder, boolean extract) {
 
 
@@ -215,6 +225,14 @@ public class FileMetaCore {
 
     }
 
+    /**
+     * 获取书的源文件
+     * @param path
+     * @param unZipPath
+     * @param child
+     * @return
+     * @throws IOException
+     */
     private EbookMeta getEbookMeta(String path, String unZipPath, String child) throws IOException {
         EbookMeta ebookMeta = EbookMeta.Empty();
         String fileName = ExtUtils.getFileName(unZipPath);
@@ -233,7 +251,7 @@ public class FileMetaCore {
         if (AppState.get().isUseCalibreOpf && CalirbeExtractor.isCalibre(unZipPath)) {
             ebookMeta = CalirbeExtractor.getBookMetaInformation(unZipPath);
             LOG.d("isCalibre find", unZipPath, ebookMeta.coverImage);
-        } else if (BookType.EPUB.is(unZipPath) || BookType.ODT.is(unZipPath)) {
+        } else if (BookType.EPUB.is(unZipPath) || BookType.ODT.is(unZipPath)) {//如果是epub格式的电子小说则加载epub的解析器
             ebookMeta = EpubExtractor.get().getBookMetaInformation(unZipPath);
         } else if (BookType.FB2.is(unZipPath)) {
             ebookMeta = Fb2Extractor.get().getBookMetaInformation(unZipPath);
@@ -326,8 +344,8 @@ public class FileMetaCore {
     }
 
     public void udpateFullMeta(FileMeta fileMeta, EbookMeta meta) {
-        fileMeta.setAuthor(TxtUtils.trim(meta.getAuthor()));
-        fileMeta.setTitle(meta.getTitle());
+        fileMeta.setAuthor(TxtUtils.trim(meta.getAuthor()));//填上作者
+        fileMeta.setTitle(meta.getTitle());//填上书名
         fileMeta.setSequence(replaceComma(TxtUtils.firstUppercase(meta.getSequence())));
         fileMeta.setGenre(replaceComma(meta.getGenre()));
         fileMeta.setAnnotation(meta.getAnnotation());
@@ -355,6 +373,11 @@ public class FileMetaCore {
 
     }
 
+    /**
+     * 更新文件元
+     * @param fileMeta
+     * @param file
+     */
     public void upadteBasicMeta(FileMeta fileMeta, File file) {
         fileMeta.setTitle(file.getName());// temp
 

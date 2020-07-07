@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 public interface CodecContext {
 
     /**
+     * 打开适当的文件
      * Open appropriate document
      *
      * @param fileName

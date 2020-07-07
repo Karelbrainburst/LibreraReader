@@ -7,11 +7,14 @@ import org.ebookdroid.core.VScrollController;
 import org.ebookdroid.ui.viewer.IActivityController;
 import org.ebookdroid.ui.viewer.IViewController;
 
+/**
+ * 小说文档视图模式
+ */
 public enum DocumentViewMode {
 
-    VERTICALL_SCROLL(PageAlign.WIDTH, VScrollController.class),
+    VERTICALL_SCROLL(PageAlign.WIDTH, VScrollController.class),//竖向滚动：滚动模式
 
-    HORIZONTAL_SCROLL(PageAlign.HEIGHT, HScrollController.class);
+    HORIZONTAL_SCROLL(PageAlign.HEIGHT, HScrollController.class);//横向滚动：书籍模式
 
     private final PageAlign pageAlign;
 

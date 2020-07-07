@@ -11,6 +11,9 @@ import org.ebookdroid.core.ViewState;
 import org.ebookdroid.core.events.ZoomListener;
 import org.emdev.ui.progress.IProgressIndicator;
 
+/**
+ * 阅读界面的控制器
+ */
 public interface IViewController extends ZoomListener {
 
     public boolean isInitialized();

@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * 抽象事件
+ */
 public abstract class AbstractEvent implements IEvent {
 
     protected final List<PageTreeNode> nodesToDecode = new ArrayList<PageTreeNode>();

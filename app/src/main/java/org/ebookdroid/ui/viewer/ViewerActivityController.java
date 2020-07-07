@@ -8,6 +8,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.InputType;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -57,6 +58,9 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * 视图界面控制器
+ */
 public class ViewerActivityController extends ActionController<VerticalViewActivity> implements IActivityController, DecodingProgressListener, CurrentPageListener, IBookSettingsChangeListener {
 
 
@@ -83,6 +87,7 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
     VerticalViewActivity viewerActivity;
 
     /**
+     * 实例化新的基本查看器活动。
      * Instantiates a new base viewer activity.
      */
     public ViewerActivityController(final VerticalViewActivity activity) {
@@ -113,6 +118,10 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
         this.onBookLoaded = onBookLoaded;
     }
 
+    /**
+     * 开始创建小说
+     * @param a
+     */
     public void afterCreate(VerticalViewActivity a) {
         final VerticalViewActivity activity = getManagedComponent();
 
@@ -121,7 +130,9 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
         if (++loadingCount == 1) {
             documentModel = ActivityControllerStub.DM_STUB;
 
+            Log.v("ViewerActivityControlle","afterCreate 111");
             if (intent == null || intent.getData() == null) {
+                Log.v("ViewerActivityControlle","afterCreate 222");
                 return;
             }
 
@@ -129,24 +140,27 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
             m_fileName = intent.getData().getPath();
             codecType = BookType.getByUri(m_fileName);
 
-            FileMeta meta = FileMetaCore.createMetaIfNeed(m_fileName, false);
+            FileMeta meta = FileMetaCore.createMetaIfNeed(m_fileName, false);//创建一个书元,只是用来显示书名
             title = meta.getTitle();
-            if (TxtUtils.isEmpty(title)) {
-                title = ExtUtils.getFileName(m_fileName);
+            if (TxtUtils.isEmpty(title)) {//如果书元中无法拿到书名
+                title = ExtUtils.getFileName(m_fileName);//则从文件名中获取
+                Log.v("ViewerActivityControlle","afterCreate 333");
             }
             LOG.d("Book-title", title);
 
 
             if (codecType == null) {
+                Log.v("ViewerActivityControlle","afterCreate 444");
                 if (getActivity() != null) {
                     Toast.makeText(getActivity(), Apps.getApplicationName(getActivity()) + " " + getActivity().getString(R.string.application_cannot_open_the_book), Toast.LENGTH_LONG).show();
                     getActivity().finish();
+                    Log.v("ViewerActivityControlle","afterCreate 555");
                 }
                 return;
             }
 
             LOG.d("codecType last", codecType);
-            documentModel = new DocumentModel(codecType, getView());
+            documentModel = new DocumentModel(codecType, getView());//终于找到真正的小说绘制入坑了 /(ㄒoㄒ)/~~
             documentModel.addListener(ViewerActivityController.this);
 
             final Uri uri = Uri.fromFile(file);
@@ -162,6 +176,7 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
 
             if (intent.hasExtra("id2")) {
                 wrapperControlls.showSelectTextMenu();
+                Log.v("ViewerActivityControlle","afterCreate 666");
             }
 
             wrapperControlls.setTitle(title);
@@ -178,13 +193,18 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
             if (stringExtra == null) {
                 stringExtra = "";
             }
-            startDecoding(m_fileName, stringExtra);
+            startDecoding(m_fileName, stringExtra);//开始解码
         }
 
     }
 
     public int pageCount;
 
+    /**
+     * 开始解码
+     * @param fileName
+     * @param password
+     */
     public void startDecoding(final String fileName, final String password) {
         getManagedComponent().view.getView().post(new BookLoadTask(fileName, password, new Runnable() {
 
@@ -308,7 +328,7 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
     protected IViewController switchDocumentController(final AppBook bs) {
         if (bs != null) {
             try {
-                final IViewController newDc = DocumentViewMode.VERTICALL_SCROLL.create(this);
+                final IViewController newDc = DocumentViewMode.VERTICALL_SCROLL.create(this);//早在这里开始已经开始创建DocumentViewMode.create
                 if (newDc != null) {
                     final IViewController oldDc = ctrl.getAndSet(newDc);
                     getZoomModel().removeListener(oldDc);
@@ -593,6 +613,11 @@ public class ViewerActivityController extends ActionController<VerticalViewActiv
             closeActivity(null);
         }
 
+        /**
+         * 运行在后台，打开小说
+         * @param params The parameters of the task.
+         * @return
+         */
         @Override
         protected Throwable doInBackground(final String... params) {
             try {

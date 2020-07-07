@@ -70,6 +70,9 @@ import mobi.librera.smartreflow.AndroidPlatformImage;
 import mobi.librera.smartreflow.SmartReflow1;
 import okhttp3.Request;
 
+/**
+ * 图像提取器
+ */
 public class ImageExtractor {
 
     public static final int COVER_PAGE_WITH_EFFECT = -3;
@@ -229,7 +232,7 @@ public class ImageExtractor {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public Bitmap coverPDFNative(PageUrl pageUrl) {
         try {
-            LOG.d("Cover-PDF-navite");
+            LOG.d("Cover-PDF-navite");//调用native方法获取封面
             PdfRenderer renderer = new PdfRenderer(ParcelFileDescriptor.open(new File(pageUrl.getPath()), ParcelFileDescriptor.MODE_READ_ONLY));
             PdfRenderer.Page page = renderer.openPage(0);
 

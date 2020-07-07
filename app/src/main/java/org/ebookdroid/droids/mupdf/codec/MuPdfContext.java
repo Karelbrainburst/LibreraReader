@@ -4,6 +4,9 @@ import android.graphics.Bitmap;
 
 import org.ebookdroid.core.codec.AbstractCodecContext;
 
+/**
+ * MuPdf解码器，读取小说
+ */
 public abstract class MuPdfContext extends AbstractCodecContext {
 
     public static final Bitmap.Config NATIVE_BITMAP_CFG = Bitmap.Config.ARGB_8888;

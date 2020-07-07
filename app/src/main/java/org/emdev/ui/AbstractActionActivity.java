@@ -8,6 +8,11 @@ import com.foobnix.ui2.AdsFragmentActivity;
 import org.emdev.ui.actions.ActionController;
 import org.emdev.ui.actions.ActionEx;
 
+/**
+ * 抽象基类：
+ * @param <A>
+ * @param <C>
+ */
 public abstract class AbstractActionActivity<A extends AdsFragmentActivity, C extends ActionController<A>> extends AdsFragmentActivity {
 
     public static final String MENU_ITEM_SOURCE = "source";

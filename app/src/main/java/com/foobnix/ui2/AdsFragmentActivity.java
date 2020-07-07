@@ -15,6 +15,9 @@ import com.foobnix.tts.TTSNotification;
 
 import fi.iki.elonen.SampleServer;
 
+/**
+ * 抽象FragmentActivity基类
+ */
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
 public abstract class AdsFragmentActivity extends FragmentActivity {
 
@@ -44,6 +47,10 @@ public abstract class AdsFragmentActivity extends FragmentActivity {
 
     protected  boolean withInterstitial = true;
 
+    /**
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);

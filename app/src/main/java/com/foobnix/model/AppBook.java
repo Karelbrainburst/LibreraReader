@@ -18,10 +18,10 @@ public class AppBook implements CurrentPageListener {
     public transient String path;
 
     public int z = 100;//z
-    public boolean sp = false;//split pages
-    public boolean cp = false; //crop pages
-    public boolean dp = false; //double pages normal
-    public boolean dc = false; //double pages cover
+    public boolean sp = false;//split pages 分页
+    public boolean cp = false; //crop pages 裁剪页面
+    public boolean dp = false; //double pages normal 双页正常
+    public boolean dc = false; //double pages cover 双页封面
     public int lk = LOCK_NONE;
     public float x; //offsetX
     public float y; //offsetY

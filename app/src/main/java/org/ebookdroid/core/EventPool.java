@@ -2,12 +2,16 @@ package org.ebookdroid.core;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 
 import org.ebookdroid.ui.viewer.IActivityController;
 import org.ebookdroid.ui.viewer.IViewController.InvalidateSizeReason;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * 事件池
+ */
 public class EventPool {
 
     private static final ConcurrentLinkedQueue<EventDraw> drawEvents = new ConcurrentLinkedQueue<EventDraw>();
@@ -21,12 +25,21 @@ public class EventPool {
     private static final ConcurrentLinkedQueue<EventZoomIn> zoomInEvents = new ConcurrentLinkedQueue<EventZoomIn>();
     private static final ConcurrentLinkedQueue<EventZoomOut> zoomOutEvents = new ConcurrentLinkedQueue<EventZoomOut>();
 
+    /**
+     * 绘制事件
+     * @param viewState
+     * @param canvas
+     * @param base
+     * @return
+     */
     public static EventDraw newEventDraw(final ViewState viewState, final Canvas canvas, IActivityController base) {
         EventDraw event = drawEvents.poll();
         if (event == null) {
             event = new EventDraw(drawEvents);
+            Log.v("EventPool","111");
         }
         event.init(viewState, canvas, base);
+        Log.v("EventPool","222");
         return event;
     }
 

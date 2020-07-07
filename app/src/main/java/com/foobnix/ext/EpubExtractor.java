@@ -43,6 +43,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Epub提取器
+ */
 public class EpubExtractor extends BaseExtractor {
 
     final static EpubExtractor inst = new EpubExtractor();
@@ -204,6 +207,13 @@ public class EpubExtractor extends BaseExtractor {
 
     }
 
+    /**
+     * 提取附属物
+     *
+     * @param bookPath
+     * @param attachmentName
+     * @return
+     */
     public static File extractAttachment(File bookPath, String attachmentName) {
         LOG.d("Begin extractAttachment", bookPath.getPath(), attachmentName);
         try {
@@ -239,6 +249,13 @@ public class EpubExtractor extends BaseExtractor {
         }
     }
 
+    /**
+     * 写入一个输出流
+     *
+     * @param zipInputStream
+     * @param out
+     * @throws IOException
+     */
     public static void writeToStream(InputStream zipInputStream, OutputStream out) throws IOException {
 
         byte[] bytesIn = new byte[BUFFER_SIZE];
@@ -249,6 +266,13 @@ public class EpubExtractor extends BaseExtractor {
         out.close();
     }
 
+    /**
+     * 获取附件
+     *
+     * @param inputPath
+     * @return
+     * @throws IOException
+     */
     public static List<String> getAttachments(String inputPath) throws IOException {
         List<String> attachments = new ArrayList<String>();
         try {
@@ -316,6 +340,12 @@ public class EpubExtractor extends BaseExtractor {
 
     }
 
+
+    /**
+     * 获取图书概述
+     * @param path
+     * @return
+     */
     @Override
     public String getBookOverview(String path) {
         String info = "";
@@ -326,7 +356,7 @@ public class EpubExtractor extends BaseExtractor {
 
             while ((nextEntry = zipInputStream.getNextEntry()) != null) {
                 String name = nextEntry.getName().toLowerCase(Locale.US);
-                if (name.endsWith(".opf")) {
+                if (name.endsWith(".opf")) {//找到.opf结尾的 content.opf (该文件记录epub中所有资源的总汇和规范)
 
                     XmlPullParser xpp = XmlParser.buildPullParser();
                     xpp.setInput(zipInputStream, "utf-8");
@@ -334,7 +364,7 @@ public class EpubExtractor extends BaseExtractor {
                     int eventType = xpp.getEventType();
 
                     while (eventType != XmlPullParser.END_DOCUMENT) {
-                        if (eventType == XmlPullParser.START_TAG) {
+                        if (eventType == XmlPullParser.START_TAG) {//解析description内容 获取 小说描述
                             if ("dc:description".equals(xpp.getName()) || "dcns:description".equals(xpp.getName())) {
                                 info = xpp.nextText();
                                 break;
@@ -356,6 +386,11 @@ public class EpubExtractor extends BaseExtractor {
         return info;
     }
 
+    /**
+     * 获取图书元信息
+     * @param path
+     * @return
+     */
     @Override
     public EbookMeta getBookMetaInformation(String path) {
         try {
@@ -510,6 +545,16 @@ public class EpubExtractor extends BaseExtractor {
         }
     }
 
+    /**
+     * 获取书的封面
+     *
+     * 重要的封面图片获取方法
+     * 专门获取封面的方法
+     * 根据一个epub文件的路径，找到这个epub文件（压缩文件）中名字为"cover"的封面图片
+     * 第一次进来的app进过这个方法后就会获得封面
+     * @param path
+     * @return
+     */
     @Override
     public byte[] getBookCover(String path) {
         byte[] cover = null;
@@ -518,22 +563,26 @@ public class EpubExtractor extends BaseExtractor {
 
             ArchiveEntry nextEntry = null;
 
-            String coverName = null;
-            String coverResource = null;
+            String coverName = null;//记录封面名在"OPBEPS/"目录下的文件名，最终的值为：Images/cover.jpg
+            String coverResource = null;//记录封面图片的资源名（文件名）最终的值为：cover.jpg
 
             while (coverName == null && (nextEntry = zipInputStream.getNextEntry()) != null) {
                 String name = nextEntry.getName().toLowerCase(Locale.US);
-                if (name.endsWith(".opf")) {
-                    XmlPullParser xpp = XmlParser.buildPullParser();
+                if (name.endsWith(".opf")) {//找到content.opf文件
+                    XmlPullParser xpp = XmlParser.buildPullParser();//创建一个xmL解析器
                     xpp.setInput(zipInputStream, "utf-8");
 
-                    int eventType = xpp.getEventType();
+                    int eventType = xpp.getEventType();//开始获取xml标签
 
-                    while (eventType != XmlPullParser.END_DOCUMENT) {
-                        if (eventType == XmlPullParser.START_TAG) {
+                    while (eventType != XmlPullParser.END_DOCUMENT) {//当一开始还没读到结束标签时，继续读取xml
+                        if (eventType == XmlPullParser.START_TAG) {//读到开始标签时
+                            //查找<meta/>标签,当找到 并且 name 的值为"cover"时
                             if ("meta".equals(xpp.getName()) && "cover".equals(xpp.getAttributeValue(null, "name"))) {
-                                coverResource = xpp.getAttributeValue(null, "content");
+                                coverResource = xpp.getAttributeValue(null, "content");//把content 的值拿出赋值
+                                //其实就是解析到这一行：<meta name="cover" content="cover.jpg" />
                             }
+                            // 以下就是查找解析到这一行：<item id="cover.jpg" href="Images/cover.jpg" media-type="image/jpeg" properties="cover-image"/>
+                            //当查找标签<item/>时，查看该行的 id 数值是否为"cover.jpg"
                             if ("item".equals(xpp.getName()) && "cover-image".equals(xpp.getAttributeValue(null, "properties"))) {
                                 coverName = xpp.getAttributeValue(null, "href");
                                 if (coverName != null && coverName.endsWith(".svg")) {
@@ -543,14 +592,14 @@ public class EpubExtractor extends BaseExtractor {
                             }
 
                             if (coverResource != null && "item".equals(xpp.getName()) && coverResource.equals(xpp.getAttributeValue(null, "id"))) {
-                                coverName = xpp.getAttributeValue(null, "href");
-                                if (coverName != null && coverName.endsWith(".svg")) {
+                                coverName = xpp.getAttributeValue(null, "href");//如果找到，则把href的数值取出并赋值
+                                if (coverName != null && coverName.endsWith(".svg")) {//查看是否为.svg结尾
                                     coverName = null;
                                 }
                                 break;
                             }
                         }
-                        eventType = xpp.next();
+                        eventType = xpp.next();//指向下一个标签
                     }
                 }
             }
@@ -568,14 +617,14 @@ public class EpubExtractor extends BaseExtractor {
                 }
             }
 
-            if (cover == null) {
+            if (cover == null) {//若是进过上面的代码后还没有获得封面
                 zipInputStream.close();
 
                 zipInputStream = Zips.buildZipArchiveInputStream(path);
                 while ((nextEntry = zipInputStream.getNextEntry()) != null) {
                     String name = nextEntry.getName().toLowerCase(Locale.US);
                     if (name.endsWith(".jpeg") || name.endsWith(".jpg") || name.endsWith(".png")) {
-                        if (name.contains("cover")) {
+                        if (name.contains("cover")) {//比起下面的方法就多了这里
                             cover = BaseExtractor.getEntryAsByte(zipInputStream);
                             break;
                         }
@@ -584,7 +633,7 @@ public class EpubExtractor extends BaseExtractor {
                 }
             }
 
-            if (cover == null) {
+            if (cover == null) {//若是经过上面的代码后还没有获得封面
                 zipInputStream.close();
 
                 zipInputStream = Zips.buildZipArchiveInputStream(path);
@@ -605,6 +654,12 @@ public class EpubExtractor extends BaseExtractor {
         return cover;
     }
 
+    /**
+     * 获取脚页记号
+     *
+     * @param inputPath
+     * @return
+     */
     @Override
     public Map<String, String> getFooterNotes(String inputPath) {
 

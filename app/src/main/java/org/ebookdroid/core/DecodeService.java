@@ -22,6 +22,9 @@ import org.ebookdroid.droids.mupdf.codec.TextWord;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 解码服务类
+ */
 public interface DecodeService {
 
 	void open(String fileName, String password);

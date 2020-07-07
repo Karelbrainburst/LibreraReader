@@ -9,6 +9,9 @@ import com.foobnix.pdf.info.BuildConfig;
 
 import java.io.File;
 
+/**
+ * 全局SharedPreferences
+ */
 public class AppSP {
 
 
@@ -27,7 +30,7 @@ public class AppSP {
     public boolean isLocked = false;
     public boolean isFirstTimeVertical = true;
     public boolean isFirstTimeHorizontal = true;
-    public int readingMode = AppState.READING_MODE_BOOK;
+    public int readingMode = AppState.READING_MODE_BOOK;//阅读模式书
     public long syncTime;
     public int syncTimeStatus;
     public String hypenLang;

@@ -4,6 +4,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.text.TextPaint;
 
+/**
+ * 页面画图
+ */
 public enum PagePaint {
 
     /**
@@ -18,7 +21,7 @@ public enum PagePaint {
     public final Paint bitmapPaint;
     public final TextPaint textPaint = new TextPaint();
     public final Paint fillPaint = new Paint();
-    public final Paint backgroundFillPaint = new Paint();
+    public final Paint backgroundFillPaint = new Paint();//背景补漆，每次打开小说阅读界面时会优先填上一片黑色
     public final Paint decodingPaint = new Paint();
     public final Paint strokePaint = new Paint();
 

@@ -44,6 +44,9 @@ import org.ebookdroid.common.settings.SettingsManager;
 import org.ebookdroid.ui.viewer.viewers.PdfSurfaceView;
 import org.emdev.ui.AbstractActionActivity;
 
+/**
+ * 垂直滚动翻页看书界面
+ */
 public class VerticalViewActivity extends AbstractActionActivity<VerticalViewActivity, ViewerActivityController> {
     public static final DisplayMetrics DM = new DisplayMetrics();
 
@@ -73,7 +76,7 @@ public class VerticalViewActivity extends AbstractActionActivity<VerticalViewAct
 
     /**
      * {@inheritDoc}
-     *
+     * 创建控制器
      * @see org.emdev.ui.AbstractActionActivity#createController()
      */
     @Override
@@ -97,7 +100,7 @@ public class VerticalViewActivity extends AbstractActionActivity<VerticalViewAct
 
         if (getIntent().getData() != null) {
             String path = getIntent().getData().getPath();
-            final AppBook bs = SettingsManager.getBookSettings(path);
+            final AppBook bs = SettingsManager.getBookSettings(path);//获取路径
             // AppState.get().setNextScreen(bs.isNextScreen);
             if (bs != null) {
                 // AppState.get().l = bs.l;
@@ -118,8 +121,10 @@ public class VerticalViewActivity extends AbstractActionActivity<VerticalViewAct
 
         getController().beforeCreate(this);
 
+        //初始化白天阅读模式
         BrightnessHelper.applyBrigtness(this);
 
+        //切换主题
         if (AppState.get().isDayNotInvert) {
             setTheme(R.style.StyledIndicatorsWhite);
         } else {
@@ -142,11 +147,11 @@ public class VerticalViewActivity extends AbstractActionActivity<VerticalViewAct
 
 
         getController().createWrapper(this);
-        frameLayout = (FrameLayout) findViewById(R.id.documentView);
+        frameLayout = (FrameLayout) findViewById(R.id.documentView);//这个frameLayout是小说view的主承载体
 
-        view = new PdfSurfaceView(getController());
+        view = new PdfSurfaceView(getController());//PdfSurfaceView是真正的小说内容界面
 
-        frameLayout.addView(view.getView());
+        frameLayout.addView(view.getView());//将小说界面放到frameLayout中
 
         getController().afterCreate(this);
 

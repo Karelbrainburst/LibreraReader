@@ -9,6 +9,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.text.InputType;
+import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
@@ -59,6 +60,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 垂直模式控制器
+ */
 public class VerticalModeController extends DocumentController {
 
     private ViewerActivityController ctr;
@@ -395,6 +399,7 @@ public class VerticalModeController extends DocumentController {
     @Override
     public synchronized String getPageHtml() {
         String pageHTML = ctr.getDecodeService().getPageHTML(getCurentPageFirst1() - 1);
+        Log.v("VerticalModeController","pageHTML: "+pageHTML);
         pageHTML = TxtUtils.replaceHTMLforTTS(pageHTML);
         pageHTML = pageHTML.replace(TxtUtils.TTS_PAUSE, TxtUtils.TTS_PAUSE_VIEW);
         return pageHTML;

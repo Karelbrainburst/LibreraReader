@@ -59,6 +59,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 小说文档控制器
+ */
 @SuppressLint("NewApi")
 public abstract class DocumentController {
 

@@ -18,6 +18,9 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * 抽象编解码器上下文
+ */
 public abstract class AbstractCodecContext implements CodecContext {
 
     private static final AtomicLong SEQ = new AtomicLong();
